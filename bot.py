@@ -6,17 +6,11 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+# 👇 PASTE YOUR TOKEN HERE (remove the brackets and quotes)
+TOKEN = 8931399358:AAHC74ZA-aSteP5doPO_iNwF2f_zRhka4ig
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🤖 *Bot is Working!*\n\n"
-        "Send me a message and I'll reply!\n"
-        "Commands:\n"
-        "/start - Show this\n"
-        "/ping - Check if alive",
-        parse_mode='Markdown'
-    )
+    await update.message.reply_text("🤖 Bot is working! 🎉")
 
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🏓 Pong! Bot is alive!")
@@ -37,4 +31,4 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
-    main()
+    main() 
