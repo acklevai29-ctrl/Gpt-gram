@@ -1,0 +1,43 @@
+import os
+import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+import g4f
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+
+# Create application globally
+application = Application.builder().token(TOKEN).build()
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🤖 Bot is alive!")
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_msg = update.message.text
+    try:
+        response = await g4f.ChatCompletion.create_async(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": user_msg}],
+        )
+        await update.message.reply_text(response)
+    except Exception as e:
+        await update.message.reply_text(f"Error: {str(e)}")
+
+def main():
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
+    # Use webhook instead of polling
+    webhook_url = os.environ.get("RENDER_EXTERNAL_URL", "https://your-bot.onrender.com") + "/webhook"
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.environ.get("PORT", 10000)),
+        url_path="webhook",
+        webhook_url=webhook_url
+    )
+
+if __name__ == "__main__":
+    main()
