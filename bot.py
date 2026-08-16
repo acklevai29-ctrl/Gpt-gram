@@ -1,43 +1,68 @@
 import os
 import logging
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-import g4f
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 
-# Create application globally
-application = Application.builder().token(TOKEN).build()
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🤖 Bot is alive!")
+    await update.message.reply_text(
+        "🤖 *AI Assistant Bot*\n\n"
+        "Send me a message and I'll respond!\n"
+        "Commands:\n"
+        "/start - Show this message\n"
+        "/ping - Check if bot is alive",
+        parse_mode='Markdown'
+    )
+
+async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🏓 Pong! Bot is alive!")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_msg = update.message.text
-    try:
-        response = await g4f.ChatCompletion.create_async(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": user_msg}],
-        )
+    logger.info(f"Received: {user_msg}")
+    
+    # Simple echo with AI-like responses
+    responses = {
+        "hi": "Hello! How can I help you today?",
+        "hello": "Hi there! Nice to meet you!",
+        "how are you": "I'm doing great, thanks for asking!",
+        "help": "I'm here to assist you! Ask me anything.",
+        "bye": "Goodbye! Have a great day!",
+    }
+    
+    # Check for keywords in message
+    msg_lower = user_msg.lower()
+    response = None
+    
+    for key, value in responses.items():
+        if key in msg_lower:
+            response = value
+            break
+    
+    if response:
         await update.message.reply_text(response)
-    except Exception as e:
-        await update.message.reply_text(f"Error: {str(e)}")
+    else:
+        # Default response
+        await update.message.reply_text(
+            f"🤔 I received: '{user_msg}'\n\n"
+            f"I'm a simple bot right now. Try saying 'hi', 'hello', or 'help'!"
+        )
 
 def main():
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    logger.info("Starting bot...")
+    app = Application.builder().token(TOKEN).build()
     
-    # Use webhook instead of polling
-    webhook_url = os.environ.get("RENDER_EXTERNAL_URL", "https://your-bot.onrender.com") + "/webhook"
-    application.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.environ.get("PORT", 10000)),
-        url_path="webhook",
-        webhook_url=webhook_url
-    )
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("ping", ping))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
+    logger.info("Bot is polling...")
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":
     main()
