@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # 👇 PASTE YOUR TOKEN HERE (remove the brackets and quotes)
-TOKEN = 8931399358:AAHC74ZA-aSteP5doPO_iNwF2f_zRhka4ig
+TOKEN:
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🤖 Bot is working! 🎉")
