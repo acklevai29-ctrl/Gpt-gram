@@ -3,7 +3,6 @@ import threading
 import os
 import subprocess
 import sys
-import time
 
 app = Flask(__name__)
 
@@ -11,15 +10,12 @@ app = Flask(__name__)
 def health():
     return "Bot is running!", 200
 
-def run_bot():
-    while True:
-        try:
-            subprocess.run([sys.executable, "bot.py"])
-        except Exception as e:
-            print(f"Bot crashed: {e}")
-            time.sleep(5)
-
 if __name__ == "__main__":
+    # Start bot in background
+    def run_bot():
+        subprocess.run([sys.executable, "bot.py"])
+    
     threading.Thread(target=run_bot, daemon=True).start()
+    
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
